@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Water Filtration — Sales CRM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #f0f7ff;
+    --surface: #ffffff;
+    --card: #e8f3ff;
+    --border: #b8d9f5;
+    --accent: #0077cc;
+    --accent2: #00b894;
+    --red: #e84d4d;
+    --orange: #e8934d;
+    --blue: #0099ff;
+    --purple: #6c5ce7;
+    --text: #0a1f35;
+    --muted: #5a7a99;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+
+  .logo span { color: var(--text); }
+  
+  header { box-shadow: 0 2px 12px rgba(0,119,204,0.1); }
+
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .stat-val { font-size: 18px; font-weight: 500; }
+  .stat-label { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .stat-val.green { color: var(--accent2); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.orange { color: var(--orange); }
+  .stat-val.blue { color: var(--blue); }
+  .stat-val.yellow { color: var(--accent); }
+
+  /* LAYOUT */
+  .app { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 57px); }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 320px;
+    min-width: 320px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-top {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .filter-tab {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: var(--mono);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+  .filter-tab.green.active { background: var(--accent2); border-color: var(--accent2); }
+  .filter-tab.red.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .filter-tab.orange.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .filter-tab.blue.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .filter-tab.purple.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+  /* LEAD LIST */
+  .lead-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .lead-list::-webkit-scrollbar { width: 4px; }
+  .lead-list::-webkit-scrollbar-track { background: transparent; }
+  .lead-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .lead-item {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .lead-item:hover { background: #e0efff; border-color: var(--border); }
+  .lead-item.active { background: #ddeeff; border-color: var(--accent); }
+
+  .lead-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lead-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-new { background: var(--muted); }
+  .dot-no_answer { background: var(--orange); }
+  .dot-callback { background: var(--blue); }
+  .dot-interested { background: var(--accent2); }
+  .dot-closed { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot-not_interested { background: var(--red); }
+  .dot-do_not_call { background: var(--purple); }
+
+  /* MAIN PANEL */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 48px; opacity: 0.3; }
+  .empty-text { font-size: 16px; }
+  .empty-sub { font-family: var(--mono); font-size: 12px; }
+
+  /* CONTACT CARD */
+  .contact-header {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .contact-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent) 0%, #c8a030 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #000;
+    flex-shrink: 0;
+  }
+
+  .contact-info { flex: 1; }
+
+  .contact-name {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .contact-detail { display: flex; align-items: center; gap: 8px; }
+  .contact-detail a { color: var(--accent); text-decoration: none; }
+  .contact-detail a:hover { text-decoration: underline; }
+
+  .call-btn {
+    background: var(--accent2);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .call-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(77,232,160,0.3); }
+
+  /* STATUS SECTION */
+  .section-title {
+    font-size: 11px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .status-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .status-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-btn:hover { border-color: var(--text); color: var(--text); }
+  .status-btn.active-new { border-color: var(--muted); color: var(--text); background: rgba(107,107,128,0.15); }
+  .status-btn.active-no_answer { border-color: var(--orange); color: var(--orange); background: rgba(232,147,77,0.1); }
+  .status-btn.active-callback { border-color: var(--blue); color: var(--blue); background: rgba(77,154,232,0.1); }
+  .status-btn.active-interested { border-color: var(--accent2); color: var(--accent2); background: rgba(77,232,160,0.1); }
+  .status-btn.active-closed { border-color: var(--accent); color: var(--accent); background: rgba(232,197,71,0.1); }
+  .status-btn.active-not_interested { border-color: var(--red); color: var(--red); background: rgba(232,77,77,0.1); }
+  .status-btn.active-do_not_call { border-color: var(--purple); color: var(--purple); background: rgba(155,77,232,0.1); }
+
+  /* CALLBACK DATE */
+  .callback-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .date-input {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+  }
+  .date-input:focus { border-color: var(--blue); }
+
+  /* NOTES */
+  .notes-area {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  .notes-area:focus { border-color: var(--accent); }
+  .notes-area::placeholder { color: var(--muted); }
+
+  /* CALL LOG */
+  .call-log {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .call-entry {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .call-entry-left { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .call-entry-outcome { font-size: 11px; color: var(--muted); }
+  .call-entry-note { color: var(--text); }
+  .call-entry-time { color: var(--muted); font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+
+  .log-call-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 16px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 6px;
+    align-self: flex-start;
+  }
+  .log-call-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .section-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .save-indicator {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-indicator.show { opacity: 1; }
+
+  .no-leads {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .count-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--border);
+    padding: 2px 6px;
+    border-radius: 10px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div id="notion-banner" style="background:#0077cc;color:#fff;padding:10px 28px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:20px">
+  <span>💡 <strong>To embed in Notion:</strong> Upload this file to <a href="https://tiiny.host" target="_blank" style="color:#ffe066;text-decoration:underline">tiiny.host</a> (free) → get a public URL → paste into Notion as an <strong>/embed</strong> block</span>
+  <button onclick="document.getElementById('notion-banner').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;white-space:nowrap">✕ Dismiss</button>
+</div>
+<header>
+  <div class="logo">PURE WATER <span>FILTRATION</span> — CRM</div>
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-val" id="stat-total">0</span><span class="stat-label">Total</span></div>
+    <div class="stat"><span class="stat-val green" id="stat-closed">0</span><span class="stat-label">Closed</span></div>
+    <div class="stat"><span class="stat-val" style="color:var(--accent2)" id="stat-interested">0</span><span class="stat-label">Interested</span></div>
+    <div class="stat"><span class="stat-val blue" id="stat-callback">0</span><span class="stat-label">Callback</span></div>
+    <div class="stat"><span class="stat-val orange" id="stat-no-answer">0</span><span class="stat-label">No Answer</span></div>
+    <div class="stat"><span class="stat-val red" id="stat-not-interested">0</span><span class="stat-label">Not Int.</span></div>
+  </div>
+</header>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <input class="search-box" type="text" id="search" placeholder="Search name, phone, address..." oninput="renderList()">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-tab" data-filter="new" onclick="setFilter('new')">New</button>
+        <button class="filter-tab orange" data-filter="no_answer" onclick="setFilter('no_answer')">No Answer</button>
+        <button class="filter-tab blue" data-filter="callback" onclick="setFilter('callback')">Callback</button>
+        <button class="filter-tab green" data-filter="interested" onclick="setFilter('interested')">Interested</button>
+        <button class="filter-tab" data-filter="closed" onclick="setFilter('closed')">Closed</button>
+        <button class="filter-tab red" data-filter="not_interested" onclick="setFilter('not_interested')">Not Int.</button>
+        <button class="filter-tab purple" data-filter="do_not_call" onclick="setFilter('do_not_call')">DNC</button>
+      </div>
+    </div>
+    <div class="lead-list" id="lead-list"></div>
+  </div>
+
+  <div class="main" id="main-panel">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">Select a lead to get started</div>
+      <div class="empty-sub">81 contacts loaded and ready</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const RAW_CONTACTS = [{"first_name": "Brodie", "last_name": "Williams", "company_name": "410 Finch Street, Ballarat Easr", "phone1": "+61401103643", "email": "bw1686@gmail.com"}, {"first_name": "Michael", "last_name": "Kelly", "company_name": "Manallack Ln, Drouin Vic 3818, Australia", "phone1": "+61418278441", "email": "mickadamkelly@hotmail.com"}, {"first_name": "Robert", "last_name": "Pitt", "company_name": "35 Boyle Crescent", "phone1": "+61438895432", "email": "bobp3562@gmail.com"}, {"first_name": "Barry", "last_name": "Hannah", "company_name": "Unit 5 36 Karingal st", "phone1": "+61412398173", "email": "boozman21a@yahoo.com.au"}, {"first_name": "Peter", "last_name": "Bovey", "company_name": "52 Diprose St Pimlico", "phone1": "+61409709240", "email": "mrstitchs@gmail.com"}, {"first_name": "Ian", "last_name": "Mcleod", "company_name": "8 Crammond rd cowes", "phone1": "+61422121932", "email": "stillwell101@hotmail.com"}, {"first_name": "Pascal", "last_name": "Erdmann", "company_name": "22 Maple Place", "phone1": "+61423287749", "email": "parasitic_margarine921@aumail.vip"}, {"first_name": "Paula", "last_name": "Paterek", "company_name": "145 Gumtree Way", "phone1": "+61409991529", "email": "ppaterek29@gmail.com"}, {"first_name": "Holly", "last_name": "Buckley", "company_name": "98 Morwell Street, Yanchep", "phone1": "+61427943167", "email": "hbuckley95@msn.com"}, {"first_name": "Christine", "last_name": "Parker", "company_name": "Lot 3549 Adventure Way, Mt Duneed", "phone1": "+61417858073", "email": "chmp2301@gmail.com"}, {"first_name": "Vicky", "last_name": "Dickinson", "company_name": "2 Fuller lane Baldivis", "phone1": "+61403980510", "email": "vicky_marie25@outlook.com"}, {"first_name": "Sarah", "last_name": "Emery", "company_name": "60 Windsor Dr, Gosnells", "phone1": "+61415368802", "email": "beadyeyedesigns42@gmail.com"}, {"first_name": "Vicki", "last_name": "Szecsodi", "company_name": "8 Tudor Crescent", "phone1": "+61405560962", "email": "v.szecsodi@gmail.com"}, {"first_name": "Kristen", "last_name": "Francis", "company_name": "801 Havelock St", "phone1": "+61427388456", "email": "k.mccumber@live.com.au"}, {"first_name": "Trent", "last_name": "Smith", "company_name": "34 Green Court Angle Vale", "phone1": "+61429589984", "email": "trent-smith@live.com"}, {"first_name": "Maryanne", "last_name": "Harris", "company_name": "794 LHD", "phone1": "+61490028922", "email": "33.closing.anomaly@icloud.com"}, {"first_name": "Leanne", "last_name": "Yearsley", "company_name": "20 Springwater drive", "phone1": "+61425870798", "email": "lyearsley@live.com"}, {"first_name": "Lynette", "last_name": "Hooper", "company_name": "16 Gala Close Brown Hill", "phone1": "+61400273077", "email": "ja.ls.hooper@gmail.com"}, {"first_name": "Tessa", "last_name": "Ernes", "company_name": "25/447 Watson Road", "phone1": "+61414278032", "email": "tessaernes@gmail.com"}, {"first_name": "Hayley", "last_name": "Dale", "company_name": "15 Nassau Rd", "phone1": "+61451881735", "email": "hayleysimone@outlook.com.au"}, {"first_name": "Sue", "last_name": "Bouquet", "company_name": "3 Shearwater Close", "phone1": "+61401293467", "email": "2strange.highways@gmail.com"}, {"first_name": "Philip", "last_name": "Jamieson", "company_name": "100 Coalville road", "phone1": "+61402767870", "email": "philjam8@hotmail.com"}, {"first_name": "Rochelle", "last_name": "Papatheoharous", "company_name": "12 Fordham Street", "phone1": "+61474701505", "email": "happyroxy@live.ca"}, {"first_name": "Michael", "last_name": "Mckay", "company_name": "21 Shoalwater Close Seaford Rise", "phone1": "+61418133918", "email": "mckay927@gmail.com"}, {"first_name": "Chloe", "last_name": "Campbell", "company_name": "63 King Drive, Lancefield", "phone1": "+61478652899", "email": "cccampbell@outlook.com.au"}, {"first_name": "Eve", "last_name": "Stromback", "company_name": "2 Piercy Court", "phone1": "+61439434828", "email": "tessering33@hotmail.com"}, {"first_name": "Gemma", "last_name": "Moule", "company_name": "13 Evans Street", "phone1": "+61410821309", "email": "moulegemma@gmail.com"}, {"first_name": "Lisa", "last_name": "Macdougall", "company_name": "12 high view road Greenmount", "phone1": "+61434942637", "email": "lisamacdougall.saoil@googlemail.com"}, {"first_name": "Wendy", "last_name": "Nutt", "company_name": "30 Lenneberg Street", "phone1": "+61433779366", "email": "shocolatmoose@gmail.com"}, {"first_name": "Keira", "last_name": "Evans", "company_name": "46 kelston way Australind", "phone1": "+61490508699", "email": "keiracl87@gmail.com"}, {"first_name": "Dylan", "last_name": "Le neuf", "company_name": "82 oxford way north wonthaggi", "phone1": "+61423953258", "email": "microscript@gmail.com"}, {"first_name": "Evert", "last_name": "Koster", "company_name": "7B Wylie place, Karrinyup, WA", "phone1": "+61429701713", "email": "boxey49@hotmail.com"}, {"first_name": "Monique", "last_name": "Robinson", "company_name": "31 Grasshopper St Banksia Grove", "phone1": "+61419201900", "email": "baeemymon@yahoo.com.au"}, {"first_name": "Cameron", "last_name": "Cooper", "company_name": "13 amherst Ave darlington", "phone1": "+61432967611", "email": "cameroncoops@gmail.com"}, {"first_name": "Sarah", "last_name": "Phillips", "company_name": "28 Michele Crescent, Glendale", "phone1": "+61435748588", "email": "sshaw2404@yahoo.com.au"}, {"first_name": "Heathe", "last_name": "Weir", "company_name": "18 Winderie Rd", "phone1": "+61420380505", "email": "heather_weir1@hotmail.com"}, {"first_name": "Kathy", "last_name": "Mcwilliams", "company_name": "62 Turtles Bend secret harbour", "phone1": "+61408958696", "email": "kathybeevers@yahoo.com.au"}, {"first_name": "Jim", "last_name": "Coutts", "company_name": "20 Carnforth Way Wellard", "phone1": "+61423520327", "email": "jpcoutts5@bigpond.com"}, {"first_name": "Darian", "last_name": "Wilkins", "company_name": "6 Prospector Crescent", "phone1": "+61420887866", "email": "darianwilkins4@gmail.com"}, {"first_name": "Michael", "last_name": "Sahlberg", "company_name": "6 Prospector Crescent", "phone1": "+61448505401", "email": "michael.sahlberg@hotmail.com"}, {"first_name": "Vj", "last_name": "Sharma", "company_name": "2 Melrose court", "phone1": "+61402630994", "email": "vijender83@fmail.com"}, {"first_name": "Cassie", "last_name": "Andon", "company_name": "4 prestwick green", "phone1": "+61403265292", "email": "cassieandon@hotmail.com"}, {"first_name": "Bianca", "last_name": "Dodds", "company_name": "29 Dorado Street", "phone1": "+61422679148", "email": "bspeel@gmail.com"}, {"first_name": "Alex", "last_name": "Mcconnell", "company_name": "U 3 30 Dorset Rd Croydon", "phone1": "+61430296825", "email": "alexmcc2@hotmail.com"}, {"first_name": "Virginia", "last_name": "Bobbitt", "company_name": "597 Princes Hwy Heathmere", "phone1": "+61417379746", "email": "virginiafbobbitt@icloud.com"}, {"first_name": "Nathan", "last_name": "Gadd", "company_name": "17 Plowman Road, Minto NSW", "phone1": "+61405044501", "email": "beeandwhat78@gmail.com"}, {"first_name": "Roz", "last_name": "Moraitis", "company_name": "17 Nursery Grove Mount Hutton", "phone1": "+614194221541", "email": "rozmoraitis@optusnet.com.au"}, {"first_name": "Janet ann", "last_name": "Smith", "company_name": "4 dublin rd", "phone1": "+61438856251", "email": "janet@strudwicke.com"}, {"first_name": "Jason", "last_name": "Cockburn", "company_name": "17 varden st", "phone1": "+61407792785", "email": "jasoncockburn@iinet.net.au"}, {"first_name": "Natalie", "last_name": "Jennings", "company_name": "3 Glenarn Green Landsdale", "phone1": "+61400877662", "email": "displayspeccleaning@iinet.net.au"}, {"first_name": "Emily", "last_name": "Batt", "company_name": "4 Zelman Dr", "phone1": "+61432389003", "email": "emilyfenech@hotmail.com"}, {"first_name": "Rob", "last_name": "Oostdam", "company_name": "10 kilcarnup Rd. Margaret River", "phone1": "+61448433414", "email": "rob@relaxmargaretriver.com.au"}, {"first_name": "Emma", "last_name": "Allsop", "company_name": "16 Lantana Road Cape Woolamai", "phone1": "+61431793386", "email": "emma.burridge@bigpond.com"}, {"first_name": "Todd", "last_name": "Pascoe", "company_name": "22 Martin Avenue Rivervale", "phone1": "+61455842559", "email": "yyme65@gmail.com"}, {"first_name": "Benjamin", "last_name": "Dent", "company_name": "5/12 Ballantyne Street", "phone1": "+61478752465", "email": "benjamin.dent1@gmail.com"}, {"first_name": "Natalie", "last_name": "Cooper", "company_name": "23 wood road narre warren south", "phone1": "+61401555350", "email": "nataliebrent82@hotmail.com"}, {"first_name": "Samantha", "last_name": "Bienvenu", "company_name": "9 cormilio drive Wandin north", "phone1": "+61409242174", "email": "sammy_868@hotmail.com"}, {"first_name": "Chloe", "last_name": "Feazey", "company_name": "86 Wilderness Drive", "phone1": "+61488584448", "email": "chlolo0710@gmail.com"}, {"first_name": "Laura", "last_name": "Egarr", "company_name": "16 Addison Rd", "phone1": "+61408554169", "email": "lauraegarr@gmail.com"}, {"first_name": "Narelle", "last_name": "Pederick", "company_name": "50 Wembley Ave", "phone1": "+61481579479", "email": "twilite3@yahoo.com"}, {"first_name": "Michelle", "last_name": "Preiss", "company_name": "50 Anaconda Dr, North Haven SA", "phone1": "+61409695766", "email": "michelle.preiss@hotmail.com"}, {"first_name": "Mary", "last_name": "Pentsa", "company_name": "43 Vergulde Rd Regents Park", "phone1": "+61411512341", "email": "marypentsa@optusnet.com.au"}, {"first_name": "Natalie", "last_name": "Yabuka", "company_name": "41 Stormbird Loop Currambine", "phone1": "+61421815890", "email": "nyabuka@hotmail.com"}, {"first_name": "Becky", "last_name": "Palmer", "company_name": "5 Pentland Crescent Dudley Park", "phone1": "+61447123022", "email": "dobbylupin@hotmail.com"}, {"first_name": "Janelle", "last_name": "Dowton", "company_name": "11 Webber Drive Dubbo", "phone1": "+61428840456", "email": "janelle.m.dowton@bigpond.com"}, {"first_name": "Matthew", "last_name": "Perrier", "company_name": "42 Bemboka Road, Croydon Hills", "phone1": "+61488220175", "email": "pandosh@outlook.com"}, {"first_name": "Tamra", "last_name": "Marsh", "company_name": "275 Pierces Road sebastian", "phone1": "+61475397926", "email": "tamramarsh@hotmail.com"}, {"first_name": "Suzy", "last_name": "Lungo", "company_name": "24 Cook St, KURNELL", "phone1": "+61296006667", "email": "suzylu608@gmail.com"}, {"first_name": "Maria", "last_name": "Mihalakopoulos", "company_name": "110 James Street", "phone1": "+61448697348", "email": "maria.mihalakopoulos@monash.edu"}, {"first_name": "Dan", "last_name": "Nguyen", "company_name": "13 Fowler Road", "phone1": "+61413696007", "email": "thedan@hotmail.com.au"}, {"first_name": "Mel", "last_name": "Havers", "company_name": "253 Trappers Dr", "phone1": "+61404309358", "email": "melda72@yahoo.com"}, {"first_name": "Karen", "last_name": "Ngwenya", "company_name": "Unit 16, 40-46 Burra Street", "phone1": "+61435069699", "email": "karen.freiwald1@gmail.com"}, {"first_name": "Maree", "last_name": "Karas", "company_name": "17 Wyatt Avenue Earlwood", "phone1": "+61402765956", "email": "maree_krs@yahoo.com.au"}, {"first_name": "David", "last_name": "Braybrooke", "company_name": "28/18 George Street", "phone1": "+61432239200", "email": "davebraybrooke2@gmail.com"}, {"first_name": "Michelle", "last_name": "Latham", "company_name": "20/2-6 Koorabel Avenue", "phone1": "+61409775107", "email": "mlatham709@gmail.com"}, {"first_name": "Heather", "last_name": "Hopley", "company_name": "2 Upper Coomera Rd Witheren", "phone1": "+61438139261", "email": "heatherhopley@hotmail.com"}, {"first_name": "Sarah", "last_name": "Taylor", "company_name": "20/14-16 Queen St, Kings Beach", "phone1": "+61433911222", "email": "s_s_sarahtaylor@hotmail.com"}, {"first_name": "Michael", "last_name": "Felton", "company_name": "385 san mateo ave", "phone1": "+61457657195", "email": "mickfelton@hotmail.com"}, {"first_name": "Sandra", "last_name": "Rotumah", "company_name": "385 san mateo ave", "phone1": "+61400674971", "email": "thepurplewiggle@hotmail.com"}, {"first_name": "Gay", "last_name": "Wallace", "company_name": "69 Karawatha Drive", "phone1": "+61493966000", "email": "gggwww208@hotmail.com"}, {"first_name": "Sally", "last_name": "Baker", "company_name": "64 Renfrew Dr, Highland Park", "phone1": "+61411797354", "email": "sallyleebaker86@gmail.com"}];
+
+const STORAGE_KEY = 'monkh_crm_v2';
+const STATUSES = [
+  { key: 'new', label: '⬜ New', dot: 'dot-new' },
+  { key: 'no_answer', label: '📵 No Answer', dot: 'dot-no_answer' },
+  { key: 'callback', label: '📅 Callback', dot: 'dot-callback' },
+  { key: 'interested', label: '⭐ Interested', dot: 'dot-interested' },
+  { key: 'closed', label: '✅ Closed', dot: 'dot-closed' },
+  { key: 'not_interested', label: '👎 Not Interested', dot: 'dot-not_interested' },
+  { key: 'do_not_call', label: '🚫 Do Not Call', dot: 'dot-do_not_call' },
+];
+
+let leads = [];
+let activeId = null;
+let currentFilter = 'all';
+let saveTimer = null;
+
+function loadData() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    leads = JSON.parse(stored);
+    // Merge any new contacts not in stored data
+    RAW_CONTACTS.forEach(c => {
+      const id = c.phone1;
+      if (!leads.find(l => l.id === id)) {
+        leads.push(makeLead(c));
+      }
+    });
+  } else {
+    leads = RAW_CONTACTS.map(makeLead);
+  }
+  saveData();
+}
+
+function makeLead(c) {
+  return {
+    id: c.phone1,
+    first_name: c.first_name,
+    last_name: c.last_name,
+    address: c.company_name,
+    phone: c.phone1,
+    email: c.email,
+    status: 'new',
+    notes: '',
+    callback_date: '',
+    call_log: []
+  };
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+}
+
+function getLead(id) { return leads.find(l => l.id === id); }
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.filter === f);
+  });
+  renderList();
+}
+
+function getFilteredLeads() {
+  const q = document.getElementById('search').value.toLowerCase();
+  return leads.filter(l => {
+    const matchFilter = currentFilter === 'all' || l.status === currentFilter;
+    const matchSearch = !q || 
+      `${l.first_name} ${l.last_name}`.toLowerCase().includes(q) ||
+      l.phone.includes(q) ||
+      l.address.toLowerCase().includes(q) ||
+      l.email.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+function renderList() {
+  const list = document.getElementById('lead-list');
+  const filtered = getFilteredLeads();
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="no-leads">No leads found</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(l => {
+    const statusDot = STATUSES.find(s => s.key === l.status);
+    return `
+      <div class="lead-item ${l.id === activeId ? 'active' : ''}" onclick="selectLead('${l.id}')">
+        <div class="lead-name">
+          <div class="status-dot ${statusDot ? statusDot.dot : 'dot-new'}"></div>
+          ${l.first_name} ${l.last_name}
+          ${l.call_log.length > 0 ? `<span class="count-badge">${l.call_log.length}</span>` : ''}
+        </div>
+        <div class="lead-meta">${l.phone} · ${l.address}</div>
+      </div>
+    `;
+  }).join('');
+
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = leads.length;
+  document.getElementById('stat-closed').textContent = leads.filter(l => l.status === 'closed').length;
+  document.getElementById('stat-interested').textContent = leads.filter(l => l.status === 'interested').length;
+  document.getElementById('stat-callback').textContent = leads.filter(l => l.status === 'callback').length;
+  document.getElementById('stat-no-answer').textContent = leads.filter(l => l.status === 'no_answer').length;
+  document.getElementById('stat-not-interested').textContent = leads.filter(l => l.status === 'not_interested').length;
+}
+
+function selectLead(id) {
+  activeId = id;
+  renderList();
+  renderMain();
+}
+
+function renderMain() {
+  const lead = getLead(activeId);
+  if (!lead) return;
+
+  const initials = (lead.first_name[0] || '') + (lead.last_name[0] || '');
+  const panel = document.getElementById('main-panel');
+
+  panel.innerHTML = `
+    <div class="contact-header">
+      <div style="display:flex;gap:16px;align-items:flex-start;flex:1">
+        <div class="contact-avatar">${initials.toUpperCase()}</div>
+        <div class="contact-info">
+          <div class="contact-name">${lead.first_name} ${lead.last_name}</div>
+          <div class="contact-details">
+            <div class="contact-detail">📞 <a href="tel:${lead.phone}">${lead.phone}</a></div>
+            <div class="contact-detail">📧 <a href="mailto:${lead.email}">${lead.email}</a></div>
+            <div class="contact-detail">📍 ${lead.address}</div>
+          </div>
+        </div>
+      </div>
+      <button class="call-btn" onclick="logQuickCall()">📞 Log Call</button>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Call Outcome</div>
+      <div class="status-grid">
+        ${STATUSES.map(s => `
+          <button class="status-btn ${lead.status === s.key ? 'active-'+s.key : ''}" 
+            onclick="setStatus('${s.key}')">${s.label}</button>
+        `).join('')}
+      </div>
+      <div class="callback-row" id="callback-row" style="display:${lead.status === 'callback' ? 'flex' : 'none'}">
+        <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">Callback date:</span>
+        <input type="datetime-local" class="date-input" id="callback-date" 
+          value="${lead.callback_date}" onchange="setCallbackDate(this.value)">
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Notes</div>
+        <span class="save-indicator" id="save-ind">Saved ✓</span>
+      </div>
+      <textarea class="notes-area" id="notes-area" placeholder="Add call notes, objections, what they said..." 
+        oninput="scheduleNoteSave()">${lead.notes}</textarea>
+    </div>
+
+    <div class="section-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Call History (${lead.call_log.length})</div>
+        <button class="log-call-btn" onclick="logManualCall()">+ Log Call</button>
+      </div>
+      <div class="call-log" id="call-log">
+        ${lead.call_log.length === 0 
+          ? '<div style="color:var(--muted);font-family:var(--mono);font-size:12px">No calls logged yet</div>'
+          : lead.call_log.slice().reverse().map(c => `
+            <div class="call-entry">
+              <div class="call-entry-left">
+                <div class="call-entry-outcome">${STATUSES.find(s=>s.key===c.outcome)?.label || c.outcome}</div>
+                ${c.note ? `<div class="call-entry-note">${c.note}</div>` : ''}
+              </div>
+              <div class="call-entry-time">${c.time}</div>
+            </div>
+          `).join('')
+        }
+      </div>
+    </div>
+  `;
+}
+
+function setStatus(status) {
+  const lead = getLead(activeId);
+  if (!lead) return;
+  lead.status = status;
+  saveData();
+  renderList();
+  renderMain();
+}
+
+function setCallbackDate(val) {
+  const lead = getLead(activeId);
+  if (!lead) return;
+  lead.callback_date = val;
+  saveData();
+}
+
+function scheduleNoteSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const lead = getLead(activeId);
+    if (!lead) return;
+    lead.notes = document.getElementById('notes-area').value;
+    saveData();
+    const ind = document.getElementById('save-ind');
+    if (ind) {
+      ind.classList.add('show');
+      setTimeout(() => ind.classList.remove('show'), 2000);
+    }
+  }, 600);
+}
+
+function logQuickCall() {
+  const lead = getLead(activeId);
+  if (!lead) return;
+  const outcome = lead.status === 'new' ? 'no_answer' : lead.status;
+  const note = document.getElementById('notes-area')?.value?.trim() || '';
+  lead.call_log.push({
+    outcome,
+    note,
+    time: new Date().toLocaleString('en-AU', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+  });
+  saveData();
+  renderMain();
+}
+
+function logManualCall() {
+  const lead = getLead(activeId);
+  if (!lead) return;
+  const outcomes = STATUSES.map(s => s.label).join('\n');
+  const choice = prompt(`Log outcome:\n1. No Answer\n2. Callback\n3. Interested\n4. Closed\n5. Not Interested\n6. Do Not Call\n\nEnter number:`);
+  const map = {'1':'no_answer','2':'callback','3':'interested','4':'closed','5':'not_interested','6':'do_not_call'};
+  const outcome = map[choice?.trim()];
+  if (!outcome) return;
+  const note = prompt('Add a note (optional):') || '';
+  lead.call_log.push({
+    outcome,
+    note,
+    time: new Date().toLocaleString('en-AU', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })
+  });
+  lead.status = outcome;
+  saveData();
+  renderList();
+  renderMain();
+}
+
+// Init
+loadData();
+renderList();
+</script>
+</body>
+</html>
