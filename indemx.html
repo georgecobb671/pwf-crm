@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Water Filtration — Sales CRM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #f0f7ff;
+    --surface: #ffffff;
+    --card: #e8f3ff;
+    --border: #b8d9f5;
+    --accent: #0077cc;
+    --accent2: #00b894;
+    --red: #e84d4d;
+    --orange: #e8934d;
+    --blue: #0099ff;
+    --purple: #6c5ce7;
+    --text: #0a1f35;
+    --muted: #5a7a99;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); }
+
+  .wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+  .notion-tip { background: #0077cc; color: #fff; padding: 7px 20px; font-family: var(--mono); font-size: 11px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-shrink: 0; }
+  .notion-tip a { color: #ffe066; }
+  .notion-tip button { background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 11px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: 0 2px 10px rgba(0,119,204,0.08); flex-shrink: 0; }
+  .logo { font-size: 15px; font-weight: 800; letter-spacing: -0.5px; color: var(--accent); }
+  .logo span { color: var(--text); }
+
+  .stats-bar { display: flex; gap: 18px; font-family: var(--mono); }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .stat-val { font-size: 15px; font-weight: 700; }
+  .stat-label { color: var(--muted); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .body { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { width: 295px; min-width: 295px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .sidebar-top { padding: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+  .search-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: var(--mono); font-size: 12px; width: 100%; outline: none; }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+
+  .filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-tab { padding: 3px 8px; border-radius: 20px; font-size: 10px; font-family: var(--mono); border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .filter-tab.f-no_answer.active  { background: var(--orange); border-color: var(--orange); }
+  .filter-tab.f-callback.active   { background: var(--blue); border-color: var(--blue); }
+  .filter-tab.f-interested.active { background: var(--accent2); border-color: var(--accent2); }
+  .filter-tab.f-closed.active     { background: #27ae60; border-color: #27ae60; }
+  .filter-tab.f-not_interested.active { background: var(--red); border-color: var(--red); }
+  .filter-tab.f-do_not_call.active { background: var(--purple); border-color: var(--purple); }
+
+  .lead-list { flex: 1; overflow-y: auto; padding: 6px; }
+  .lead-list::-webkit-scrollbar { width: 4px; }
+  .lead-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* lead tile colours by status */
+  .lead-item { padding: 9px 11px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; transition: all 0.18s; margin-bottom: 3px; }
+  .lead-item:hover { filter: brightness(0.94); }
+  .lead-item.active { outline: 2px solid #0a1f35; outline-offset: 1px; }
+  .s-new            { background: #edf4ff; border-color: #b8d9f5; }
+  .s-no_answer      { background: #fff4e8; border-color: #f5c48a; }
+  .s-callback       { background: #e6f3ff; border-color: #7ec8f5; }
+  .s-interested     { background: #e6faf3; border-color: #6dd9b5; }
+  .s-closed         { background: #e6f8ec; border-color: #6dd49a; }
+  .s-not_interested { background: #fdeaea; border-color: #f59898; }
+  .s-do_not_call    { background: #f0ebff; border-color: #b09cf0; }
+
+  .lead-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .lead-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lead-time { font-family: var(--mono); font-size: 10px; font-weight: 600; margin-top: 3px; }
+  .t-good { color: #1a7a3a; } .t-warn { color: #c06000; } .t-bad { color: #a00000; }
+
+  .status-pill { font-family: var(--mono); font-size: 9px; padding: 1px 6px; border-radius: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; flex-shrink: 0; }
+  .p-new            { background: #cde0f7; color: #1a4a7a; }
+  .p-no_answer      { background: #fce0c0; color: #8a4000; }
+  .p-callback       { background: #c0e4ff; color: #004a8a; }
+  .p-interested     { background: #b8f0dd; color: #006644; }
+  .p-closed         { background: #b8f0c8; color: #005522; }
+  .p-not_interested { background: #ffc8c8; color: #880000; }
+  .p-do_not_call    { background: #ddd0ff; color: #440099; }
+
+  .count-badge { font-family: var(--mono); font-size: 9px; background: rgba(0,0,0,0.1); padding: 1px 5px; border-radius: 8px; color: var(--muted); }
+  .group-label { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 6px 3px; }
+  .no-leads { padding: 20px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+
+  /* ── MAIN ── */
+  .main { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: var(--bg); }
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); }
+
+  .contact-header { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; box-shadow: 0 2px 8px rgba(0,119,204,0.06); }
+  .contact-avatar { width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg,#0077cc,#00b4ff); display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .contact-name { font-size: 21px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 5px; }
+  .contact-details { display: flex; flex-direction: column; gap: 3px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .contact-detail { display: flex; align-items: center; gap: 7px; }
+  .contact-detail a { color: var(--accent); text-decoration: none; }
+
+  .time-badge { display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; padding: 6px 12px; font-family: var(--mono); font-size: 12px; font-weight: 600; margin-top: 8px; border: 1px solid; }
+  .time-badge.t-good { border-color: #6dd49a; background: #e6f8ec; color: #005522; }
+  .time-badge.t-warn { border-color: #f5c48a; background: #fff4e8; color: #8a4000; }
+  .time-badge.t-bad  { border-color: #f59898; background: #fdeaea; color: #880000; }
+
+  .call-btn { background: var(--accent2); color: #fff; border: none; border-radius: 10px; padding: 11px 16px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: all 0.15s; white-space: nowrap; }
+  .call-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,184,148,0.3); }
+
+  .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 2px 6px rgba(0,119,204,0.04); }
+  .section-title { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+
+  .status-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+  .status-btn { padding: 6px 13px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); font-family: var(--mono); font-size: 11px; cursor: pointer; transition: all 0.15s; }
+  .status-btn:hover { border-color: var(--text); color: var(--text); }
+  .status-btn.a-new            { border-color:#5a7a99; color:#0a1f35; background:#edf4ff; font-weight:700; }
+  .status-btn.a-no_answer      { border-color:var(--orange); color:#8a4000; background:#fff4e8; font-weight:700; }
+  .status-btn.a-callback       { border-color:var(--blue); color:#004a8a; background:#e6f3ff; font-weight:700; }
+  .status-btn.a-interested     { border-color:var(--accent2); color:#006644; background:#e6faf3; font-weight:700; }
+  .status-btn.a-closed         { border-color:#27ae60; color:#005522; background:#e6f8ec; font-weight:700; }
+  .status-btn.a-not_interested { border-color:var(--red); color:#880000; background:#fdeaea; font-weight:700; }
+  .status-btn.a-do_not_call    { border-color:var(--purple); color:#440099; background:#f0ebff; font-weight:700; }
+
+  .callback-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .date-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--text); font-family: var(--mono); font-size: 12px; outline: none; }
+  .date-input:focus { border-color: var(--blue); }
+
+  .notes-area { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 11px; color: var(--text); font-family: var(--mono); font-size: 12px; width: 100%; min-height: 88px; resize: vertical; outline: none; line-height: 1.6; }
+  .notes-area:focus { border-color: var(--accent); }
+  .notes-area::placeholder { color: var(--muted); }
+
+  .call-entry { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-family: var(--mono); font-size: 11px; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 5px; }
+  .call-entry-left { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+  .call-entry-outcome { font-size: 10px; color: var(--muted); }
+  .call-entry-time { color: var(--muted); font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+
+  .log-call-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 13px; color: var(--text); font-family: var(--mono); font-size: 11px; cursor: pointer; transition: all 0.15s; margin-top: 5px; }
+  .log-call-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .save-ind { font-family: var(--mono); font-size: 10px; color: var(--accent2); opacity: 0; transition: opacity 0.3s; }
+  .save-ind.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="notion-tip" id="ntip">
+    💡 <strong>Notion embed:</strong> Upload this file to <a href="https://netlify.com/drop" target="_blank">netlify.com/drop</a> → copy the URL → paste in Notion as <strong>/embed</strong>
+    <button onclick="document.getElementById('ntip').style.display='none'">✕</button>
+  </div>
+
+  <header>
+    <div class="logo">PURE WATER <span>FILTRATION</span> — CRM</div>
+    <div class="stats-bar">
+      <div class="stat"><span class="stat-val" id="s-total" style="color:var(--accent)">0</span><span class="stat-label">Total</span></div>
+      <div class="stat"><span class="stat-val" id="s-closed" style="color:#27ae60">0</span><span class="stat-label">Closed</span></div>
+      <div class="stat"><span class="stat-val" id="s-interested" style="color:var(--accent2)">0</span><span class="stat-label">Hot</span></div>
+      <div class="stat"><span class="stat-val" id="s-callback" style="color:var(--blue)">0</span><span class="stat-label">Callback</span></div>
+      <div class="stat"><span class="stat-val" id="s-no_answer" style="color:var(--orange)">0</span><span class="stat-label">No Ans.</span></div>
+      <div class="stat"><span class="stat-val" id="s-not_interested" style="color:var(--red)">0</span><span class="stat-label">Dead</span></div>
+      <div class="stat"><span class="stat-val" id="s-new" style="color:var(--muted)">0</span><span class="stat-label">New</span></div>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sidebar">
+      <div class="sidebar-top">
+        <input class="search-box" type="text" id="search" placeholder="Search name, phone, suburb..." oninput="renderList()">
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-f="all" onclick="setFilter('all')">All</button>
+          <button class="filter-tab f-new" data-f="new" onclick="setFilter('new')">New</button>
+          <button class="filter-tab f-no_answer" data-f="no_answer" onclick="setFilter('no_answer')">No Answer</button>
+          <button class="filter-tab f-callback" data-f="callback" onclick="setFilter('callback')">Callback</button>
+          <button class="filter-tab f-interested" data-f="interested" onclick="setFilter('interested')">Interested</button>
+          <button class="filter-tab f-closed" data-f="closed" onclick="setFilter('closed')">Closed</button>
+          <button class="filter-tab f-not_interested" data-f="not_interested" onclick="setFilter('not_interested')">Not Int.</button>
+          <button class="filter-tab f-do_not_call" data-f="do_not_call" onclick="setFilter('do_not_call')">DNC</button>
+        </div>
+      </div>
+      <div class="lead-list" id="lead-list"></div>
+    </div>
+
+    <div class="main" id="main-panel">
+      <div class="empty-state">
+        <div style="font-size:42px;opacity:0.25">💧</div>
+        <div style="font-size:15px;font-weight:700">Select a lead to begin</div>
+        <div style="font-family:var(--mono);font-size:12px">81 contacts loaded</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TZ = {
+  nsw:'Australia/Sydney', act:'Australia/Sydney', vic:'Australia/Melbourne',
+  victoria:'Australia/Melbourne', qld:'Australia/Brisbane', queensland:'Australia/Brisbane',
+  sa:'Australia/Adelaide', 'south australia':'Australia/Adelaide',
+  wa:'Australia/Perth', 'western australia':'Australia/Perth',
+  nt:'Australia/Darwin', tas:'Australia/Hobart', tasmania:'Australia/Hobart',
+};
+function getTZ(s){ return TZ[(s||'').toLowerCase().trim()] || 'Australia/Sydney'; }
+function localTime(state){
+  const tz = getTZ(state), now = new Date();
+  const h = parseInt(now.toLocaleString('en-AU',{timeZone:tz,hour:'numeric',hour12:false}));
+  const t = now.toLocaleTimeString('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:true});
+  const q = h<8||h>=21?'t-bad':h<9||h>=20?'t-warn':'t-good';
+  const msg = h<8?'⛔ Too early':h>=21?'⛔ Too late':h<9?'⚠️ Call with care':h>=20?'⚠️ Getting late':'✅ Good to call';
+  return {t, q, msg, label:tz.replace('Australia/','')};
+}
+
+const RAW=[
+  {fn:'Brodie',ln:'Williams',ph:'+61401103643',em:'bw1686@gmail.com',addr:'410 Finch Street, Ballarat East',state:'Victoria',post:'3350'},
+  {fn:'Michael',ln:'Kelly',ph:'+61418278441',em:'mickadamkelly@hotmail.com',addr:'Manallack Ln, Drouin',state:'Victoria',post:'3818'},
+  {fn:'Robert',ln:'Pitt',ph:'+61438895432',em:'bobp3562@gmail.com',addr:'35 Boyle Crescent',state:'Victoria',post:'3082'},
+  {fn:'Barry',ln:'Hannah',ph:'+61412398173',em:'boozman21a@yahoo.com.au',addr:'Unit 5 36 Karingal St',state:'VIC',post:'3136'},
+  {fn:'Peter',ln:'Bovey',ph:'+61409709240',em:'mrstitchs@gmail.com',addr:'52 Diprose St Pimlico',state:'QLD',post:'4812'},
+  {fn:'Ian',ln:'McLeod',ph:'+61422121932',em:'stillwell101@hotmail.com',addr:'8 Crammond Rd Cowes',state:'VIC',post:'3922'},
+  {fn:'Pascal',ln:'Erdmann',ph:'+61423287749',em:'parasitic_margarine921@aumail.vip',addr:'22 Maple Place',state:'VIC',post:'3064'},
+  {fn:'Paula',ln:'Paterek',ph:'+61409991529',em:'ppaterek29@gmail.com',addr:'145 Gumtree Way',state:'NSW',post:'2164'},
+  {fn:'Holly',ln:'Buckley',ph:'+61427943167',em:'hbuckley95@msn.com',addr:'98 Morwell Street, Yanchep',state:'WA',post:'6035'},
+  {fn:'Christine',ln:'Parker',ph:'+61417858073',em:'chmp2301@gmail.com',addr:'Lot 3549 Adventure Way, Mt Duneed',state:'VIC',post:'3217'},
+  {fn:'Vicky',ln:'Dickinson',ph:'+61403980510',em:'vicky_marie25@outlook.com',addr:'2 Fuller Lane Baldivis',state:'WA',post:'6171'},
+  {fn:'Sarah',ln:'Emery',ph:'+61415368802',em:'beadyeyedesigns42@gmail.com',addr:'60 Windsor Dr, Gosnells',state:'WA',post:'6110'},
+  {fn:'Vicki',ln:'Szecsodi',ph:'+61405560962',em:'v.szecsodi@gmail.com',addr:'8 Tudor Crescent',state:'NSW',post:'2171'},
+  {fn:'Kristen',ln:'Francis',ph:'+61427388456',em:'k.mccumber@live.com.au',addr:'801 Havelock St',state:'WA',post:'6170'},
+  {fn:'Trent',ln:'Smith',ph:'+61429589984',em:'trent-smith@live.com',addr:'34 Green Court Angle Vale',state:'SA',post:'5117'},
+  {fn:'Maryanne',ln:'Harris',ph:'+61490028922',em:'33.closing.anomaly@icloud.com',addr:'794 LHD',state:'NSW',post:'2515'},
+  {fn:'Leanne',ln:'Yearsley',ph:'+61425870798',em:'lyearsley@live.com',addr:'20 Springwater Drive',state:'VIC',post:'3212'},
+  {fn:'Lynette',ln:'Hooper',ph:'+61400273077',em:'ja.ls.hooper@gmail.com',addr:'16 Gala Close Brown Hill',state:'VIC',post:'3350'},
+  {fn:'Tessa',ln:'Ernes',ph:'+61414278032',em:'tessaernes@gmail.com',addr:'25/447 Watson Road',state:'QLD',post:'4110'},
+  {fn:'Hayley',ln:'Dale',ph:'+61451881735',em:'hayleysimone@outlook.com.au',addr:'15 Nassau Rd',state:'Victoria',post:'3030'},
+  {fn:'Sue',ln:'Bouquet',ph:'+61401293467',em:'2strange.highways@gmail.com',addr:'3 Shearwater Close',state:'NSW',post:'2478'},
+  {fn:'Philip',ln:'Jamieson',ph:'+61402767870',em:'philjam8@hotmail.com',addr:'100 Coalville Road',state:'VIC',post:'3825'},
+  {fn:'Rochelle',ln:'Papatheoharous',ph:'+61474701505',em:'happyroxy@live.ca',addr:'12 Fordham Street',state:'QLD',post:'4012'},
+  {fn:'Michael',ln:'Mckay',ph:'+61418133918',em:'mckay927@gmail.com',addr:'21 Shoalwater Close Seaford Rise',state:'SA',post:'5169'},
+  {fn:'Chloe',ln:'Campbell',ph:'+61478652899',em:'cccampbell@outlook.com.au',addr:'63 King Drive, Lancefield',state:'Victoria',post:'3435'},
+  {fn:'Eve',ln:'Stromback',ph:'+61439434828',em:'tessering33@hotmail.com',addr:'2 Piercy Court',state:'WA',post:'6163'},
+  {fn:'Gemma',ln:'Moule',ph:'+61410821309',em:'moulegemma@gmail.com',addr:'13 Evans Street',state:'VIC',post:'3912'},
+  {fn:'Lisa',ln:'MacDougall',ph:'+61434942637',em:'lisamacdougall.saoil@googlemail.com',addr:'12 High View Road Greenmount',state:'WA',post:'6056'},
+  {fn:'Wendy',ln:'Nutt',ph:'+61433779366',em:'shocolatmoose@gmail.com',addr:'30 Lenneberg Street',state:'QLD',post:'4215'},
+  {fn:'Keira',ln:'Evans',ph:'+61490508699',em:'keiracl87@gmail.com',addr:'46 Kelston Way Australind',state:'WA',post:'6233'},
+  {fn:'Dylan',ln:'Le Neuf',ph:'+61423953258',em:'microscript@gmail.com',addr:'82 Oxford Way North Wonthaggi',state:'VIC',post:'3995'},
+  {fn:'Evert',ln:'Koster',ph:'+61429701713',em:'boxey49@hotmail.com',addr:'7B Wylie Place, Karrinyup',state:'WA',post:'6018'},
+  {fn:'Monique',ln:'Robinson',ph:'+61419201900',em:'baeemymon@yahoo.com.au',addr:'31 Grasshopper St Banksia Grove',state:'WA',post:'6031'},
+  {fn:'Cameron',ln:'Cooper',ph:'+61432967611',em:'cameroncoops@gmail.com',addr:'13 Amherst Ave Darlington',state:'WA',post:'6080'},
+  {fn:'Sarah',ln:'Phillips',ph:'+61435748588',em:'sshaw2404@yahoo.com.au',addr:'28 Michele Crescent, Glendale',state:'NSW',post:'2285'},
+  {fn:'Heathe',ln:'Weir',ph:'+61420380505',em:'heather_weir1@hotmail.com',addr:'18 Winderie Rd',state:'WA',post:'6280'},
+  {fn:'Kathy',ln:'McWilliams',ph:'+61408958696',em:'kathybeevers@yahoo.com.au',addr:'62 Turtles Bend Secret Harbour',state:'WA',post:'6174'},
+  {fn:'Jim',ln:'Coutts',ph:'+61423520327',em:'jpcoutts5@bigpond.com',addr:'20 Carnforth Way Wellard',state:'WA',post:'6170'},
+  {fn:'Darian',ln:'Wilkins',ph:'+61420887866',em:'darianwilkins4@gmail.com',addr:'6 Prospector Crescent, Diggers Rest',state:'VIC',post:'3427'},
+  {fn:'Michael',ln:'Sahlberg',ph:'+61448505401',em:'michael.sahlberg@hotmail.com',addr:'6 Prospector Crescent, Diggers Rest',state:'VIC',post:'3427'},
+  {fn:'Vj',ln:'Sharma',ph:'+61402630994',em:'vijender83@fmail.com',addr:'2 Melrose Court',state:'Victoria',post:'3155'},
+  {fn:'Cassie',ln:'Andon',ph:'+61403265292',em:'cassieandon@hotmail.com',addr:'4 Prestwick Green',state:'VIC',post:'3977'},
+  {fn:'Bianca',ln:'Dodds',ph:'+61422679148',em:'bspeel@gmail.com',addr:'29 Dorado Street',state:'WA',post:'6175'},
+  {fn:'Alex',ln:'McConnell',ph:'+61430296825',em:'alexmcc2@hotmail.com',addr:'U 3 30 Dorset Rd Croydon',state:'VIC',post:'3136'},
+  {fn:'Virginia',ln:'Bobbitt',ph:'+61417379746',em:'virginiafbobbitt@icloud.com',addr:'597 Princes Hwy Heathmere',state:'Victoria',post:'3305'},
+  {fn:'Nathan',ln:'Gadd',ph:'+61405044501',em:'beeandwhat78@gmail.com',addr:'17 Plowman Road, Minto',state:'NSW',post:'2566'},
+  {fn:'Roz',ln:'Moraitis',ph:'+614194221541',em:'rozmoraitis@optusnet.com.au',addr:'17 Nursery Grove Mount Hutton',state:'NSW',post:'2290'},
+  {fn:'Janet Ann',ln:'Smith',ph:'+61438856251',em:'janet@strudwicke.com',addr:'4 Dublin Rd',state:'SA',post:'5502'},
+  {fn:'Jason',ln:'Cockburn',ph:'+61407792785',em:'jasoncockburn@iinet.net.au',addr:'17 Varden St',state:'WA',post:'6430'},
+  {fn:'Natalie',ln:'Jennings',ph:'+61400877662',em:'displayspeccleaning@iinet.net.au',addr:'3 Glenarn Green Landsdale',state:'WA',post:'6065'},
+  {fn:'Emily',ln:'Batt',ph:'+61432389003',em:'emilyfenech@hotmail.com',addr:'4 Zelman Dr',state:'VIC',post:'3764'},
+  {fn:'Rob',ln:'Oostdam',ph:'+61448433414',em:'rob@relaxmargaretriver.com.au',addr:'10 Kilcarnup Rd, Margaret River',state:'WA',post:'6285'},
+  {fn:'Emma',ln:'Allsop',ph:'+61431793386',em:'emma.burridge@bigpond.com',addr:'16 Lantana Road Cape Woolamai',state:'Victoria',post:'3925'},
+  {fn:'Todd',ln:'Pascoe',ph:'+61455842559',em:'yyme65@gmail.com',addr:'22 Martin Avenue Rivervale',state:'WA',post:'6103'},
+  {fn:'Benjamin',ln:'Dent',ph:'+61478752465',em:'benjamin.dent1@gmail.com',addr:'5/12 Ballantyne Street',state:'VIC',post:'3071'},
+  {fn:'Natalie',ln:'Cooper',ph:'+61401555350',em:'nataliebrent82@hotmail.com',addr:'23 Wood Road Narre Warren South',state:'VIC',post:'3805'},
+  {fn:'Samantha',ln:'Bienvenu',ph:'+61409242174',em:'sammy_868@hotmail.com',addr:'9 Cormilio Drive Wandin North',state:'VIC',post:'3139'},
+  {fn:'Chloe',ln:'Feazey',ph:'+61488584448',em:'chlolo0710@gmail.com',addr:'86 Wilderness Drive',state:'VIC',post:'3977'},
+  {fn:'Laura',ln:'Egarr',ph:'+61408554169',em:'lauraegarr@gmail.com',addr:'16 Addison Rd',state:'SA',post:'5048'},
+  {fn:'Narelle',ln:'Pederick',ph:'+61481579479',em:'twilite3@yahoo.com',addr:'50 Wembley Ave',state:'SA',post:'5155'},
+  {fn:'Michelle',ln:'Preiss',ph:'+61409695766',em:'michelle.preiss@hotmail.com',addr:'50 Anaconda Dr, North Haven',state:'SA',post:'5018'},
+  {fn:'Mary',ln:'Pentsa',ph:'+61411512341',em:'marypentsa@optusnet.com.au',addr:'43 Vergulde Rd Regents Park',state:'QLD',post:'4118'},
+  {fn:'Natalie',ln:'Yabuka',ph:'+61421815890',em:'nyabuka@hotmail.com',addr:'41 Stormbird Loop Currambine',state:'WA',post:'6028'},
+  {fn:'Becky',ln:'Palmer',ph:'+61447123022',em:'dobbylupin@hotmail.com',addr:'5 Pentland Crescent Dudley Park',state:'WA',post:'6210'},
+  {fn:'Janelle',ln:'Dowton',ph:'+61428840456',em:'janelle.m.dowton@bigpond.com',addr:'11 Webber Drive Dubbo',state:'NSW',post:'2830'},
+  {fn:'Matthew',ln:'Perrier',ph:'+61488220175',em:'pandosh@outlook.com',addr:'42 Bemboka Road, Croydon Hills',state:'VIC',post:'3136'},
+  {fn:'Tamra',ln:'Marsh',ph:'+61475397926',em:'tamramarsh@hotmail.com',addr:'275 Pierces Road Sebastian',state:'Victoria',post:'3556'},
+  {fn:'Suzy',ln:'Lungo',ph:'+61296006667',em:'suzylu608@gmail.com',addr:'24 Cook St, Kurnell',state:'NSW',post:'2231'},
+  {fn:'Maria',ln:'Mihalakopoulos',ph:'+61448697348',em:'maria.mihalakopoulos@monash.edu',addr:'110 James Street',state:'VIC',post:'3175'},
+  {fn:'Dan',ln:'Nguyen',ph:'+61413696007',em:'thedan@hotmail.com.au',addr:'13 Fowler Road',state:'VIC',post:'3178'},
+  {fn:'Mel',ln:'Havers',ph:'+61404309358',em:'melda72@yahoo.com',addr:'253 Trappers Dr',state:'WA',post:'6026'},
+  {fn:'Karen',ln:'Ngwenya',ph:'+61435069699',em:'karen.freiwald1@gmail.com',addr:'Unit 16, 40-46 Burra Street',state:'QLD',post:'4217'},
+  {fn:'Maree',ln:'Karas',ph:'+61402765956',em:'maree_krs@yahoo.com.au',addr:'17 Wyatt Avenue Earlwood',state:'NSW',post:'2206'},
+  {fn:'David',ln:'Braybrooke',ph:'+61432239200',em:'davebraybrooke2@gmail.com',addr:'28/18 George Street',state:'NSW',post:'2041'},
+  {fn:'Michelle',ln:'Latham',ph:'+61409775107',em:'mlatham709@gmail.com',addr:'20/2-6 Koorabel Avenue',state:'NSW',post:'2227'},
+  {fn:'Heather',ln:'Hopley',ph:'+61438139261',em:'heatherhopley@hotmail.com',addr:'2 Upper Coomera Rd Witheren',state:'QLD',post:'4275'},
+  {fn:'Sarah',ln:'Taylor',ph:'+61433911222',em:'s_s_sarahtaylor@hotmail.com',addr:'20/14-16 Queen St, Kings Beach',state:'QLD',post:'4551'},
+  {fn:'Michael',ln:'Felton',ph:'+61457657195',em:'mickfelton@hotmail.com',addr:'385 San Mateo Ave',state:'Victoria',post:'3500'},
+  {fn:'Sandra',ln:'Rotumah',ph:'+61400674971',em:'thepurplewiggle@hotmail.com',addr:'385 San Mateo Ave',state:'Victoria',post:'3500'},
+  {fn:'Gay',ln:'Wallace',ph:'+61493966000',em:'gggwww208@hotmail.com',addr:'69 Karawatha Drive',state:'QLD',post:'4557'},
+  {fn:'Sally',ln:'Baker',ph:'+61411797354',em:'sallyleebaker86@gmail.com',addr:'64 Renfrew Dr, Highland Park',state:'QLD',post:'4211'},
+];
+
+const KEY='pwf_crm_v3';
+const ORDER=['new','no_answer','callback','interested','closed','not_interested','do_not_call'];
+const SM={
+  new:{label:'⬜ New',pill:'p-new'},
+  no_answer:{label:'📵 No Answer',pill:'p-no_answer'},
+  callback:{label:'📅 Callback',pill:'p-callback'},
+  interested:{label:'⭐ Interested',pill:'p-interested'},
+  closed:{label:'✅ Closed',pill:'p-closed'},
+  not_interested:{label:'👎 Not Interested',pill:'p-not_interested'},
+  do_not_call:{label:'🚫 Do Not Call',pill:'p-do_not_call'},
+};
+
+let leads=[], activeId=null, filter='all', saveTimer=null;
+
+function load(){
+  const s=localStorage.getItem(KEY);
+  if(s){ leads=JSON.parse(s); RAW.forEach(r=>{if(!leads.find(l=>l.id===r.ph))leads.push(mk(r));}); }
+  else leads=RAW.map(mk);
+  save();
+}
+function mk(r){return{id:r.ph,fn:r.fn,ln:r.ln,ph:r.ph,em:r.em,addr:r.addr,state:r.state,post:r.post,status:'new',notes:'',cb:'',log:[]};}
+function save(){localStorage.setItem(KEY,JSON.stringify(leads));}
+function get(id){return leads.find(l=>l.id===id);}
+
+function setFilter(f){
+  filter=f;
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.toggle('active',t.dataset.f===f));
+  renderList();
+}
+
+function getFiltered(){
+  const q=document.getElementById('search').value.toLowerCase();
+  let list=leads.filter(l=>{
+    const mf=filter==='all'||l.status===filter;
+    const mq=!q||`${l.fn} ${l.ln}`.toLowerCase().includes(q)||l.ph.includes(q)||l.addr.toLowerCase().includes(q);
+    return mf&&mq;
+  });
+  list.sort((a,b)=>{
+    const d=ORDER.indexOf(a.status)-ORDER.indexOf(b.status);
+    return d!==0?d:`${a.fn}${a.ln}`.localeCompare(`${b.fn}${b.ln}`);
+  });
+  return list;
+}
+
+function renderList(){
+  const el=document.getElementById('lead-list');
+  const items=getFiltered();
+  if(!items.length){el.innerHTML='<div class="no-leads">No leads found</div>';updateStats();return;}
+  let html='', lastS=null;
+  items.forEach(l=>{
+    if(l.status!==lastS){
+      if(lastS!==null)html+=`<div style="height:4px"></div>`;
+      html+=`<div class="group-label">${SM[l.status].label}</div>`;
+      lastS=l.status;
+    }
+    const lt=localTime(l.state);
+    html+=`<div class="lead-item s-${l.status}${l.id===activeId?' active':''}" onclick="sel('${l.id}')">
+      <div class="lead-name">
+        ${l.fn} ${l.ln}
+        <span class="status-pill ${SM[l.status].pill}">${l.status.replace('_',' ')}</span>
+        ${l.log.length?`<span class="count-badge">${l.log.length}</span>`:''}
+      </div>
+      <div class="lead-meta">${l.ph} · ${l.state} ${l.post}</div>
+      <div class="lead-time ${lt.q}">🕐 ${lt.t} (${lt.label})</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+  updateStats();
+}
+
+function updateStats(){
+  document.getElementById('s-total').textContent=leads.length;
+  ['closed','interested','callback','no_answer','not_interested','new'].forEach(s=>{
+    document.getElementById('s-'+s).textContent=leads.filter(l=>l.status===s).length;
+  });
+}
+
+function sel(id){activeId=id;renderList();renderMain();}
+
+function renderMain(){
+  const l=get(activeId); if(!l)return;
+  const init=(l.fn[0]||'')+(l.ln[0]||'');
+  const lt=localTime(l.state);
+  document.getElementById('main-panel').innerHTML=`
+    <div class="contact-header">
+      <div style="display:flex;gap:13px;align-items:flex-start;flex:1">
+        <div class="contact-avatar">${init.toUpperCase()}</div>
+        <div>
+          <div class="contact-name">${l.fn} ${l.ln}</div>
+          <div class="contact-details">
+            <div class="contact-detail">📞 <a href="tel:${l.ph}">${l.ph}</a></div>
+            <div class="contact-detail">📧 <a href="mailto:${l.em}">${l.em}</a></div>
+            <div class="contact-detail">📍 ${l.addr}, ${l.state} ${l.post}</div>
+          </div>
+          <div class="time-badge ${lt.q}">🕐 ${lt.t} local · ${lt.msg}</div>
+        </div>
+      </div>
+      <button class="call-btn" onclick="quickLog()">📞 Log Call</button>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Classify this lead</div>
+      <div class="status-grid">
+        ${Object.entries(SM).map(([k,v])=>`<button class="status-btn${l.status===k?' a-'+k:''}" onclick="setS('${k}')">${v.label}</button>`).join('')}
+      </div>
+      <div id="cb-row" style="display:${l.status==='callback'?'flex':'none'}" class="callback-row">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Callback date/time:</span>
+        <input type="datetime-local" class="date-input" id="cb-date" value="${l.cb}" onchange="setCB(this.value)">
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="section-title" style="margin-bottom:0">Notes</div>
+        <span class="save-ind" id="si">Saved ✓</span>
+      </div>
+      <textarea class="notes-area" id="na" placeholder="Objections, what they said, next steps..." oninput="schedSave()">${l.notes}</textarea>
+    </div>
+
+    <div class="section-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="section-title" style="margin-bottom:0">Call History (${l.log.length})</div>
+        <button class="log-call-btn" onclick="manualLog()">+ Log Call</button>
+      </div>
+      ${l.log.length===0
+        ?'<div style="color:var(--muted);font-family:var(--mono);font-size:11px">No calls logged yet</div>'
+        :l.log.slice().reverse().map(c=>`
+          <div class="call-entry">
+            <div class="call-entry-left">
+              <div class="call-entry-outcome">${SM[c.outcome]?.label||c.outcome}</div>
+              ${c.note?`<div style="color:var(--text)">${c.note}</div>`:''}
+            </div>
+            <div class="call-entry-time">${c.time}</div>
+          </div>`).join('')
+      }
+    </div>`;
+}
+
+function setS(s){const l=get(activeId);if(!l)return;l.status=s;save();renderList();renderMain();}
+function setCB(v){const l=get(activeId);if(!l)return;l.cb=v;save();}
+function schedSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const l=get(activeId);if(!l)return;
+    l.notes=document.getElementById('na').value;save();
+    const si=document.getElementById('si');
+    if(si){si.classList.add('show');setTimeout(()=>si.classList.remove('show'),2000);}
+  },600);
+}
+function quickLog(){
+  const l=get(activeId);if(!l)return;
+  const note=document.getElementById('na')?.value?.trim()||'';
+  l.log.push({outcome:l.status,note,time:new Date().toLocaleString('en-AU',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})});
+  save();renderMain();
+}
+function manualLog(){
+  const l=get(activeId);if(!l)return;
+  const c=prompt('Outcome:\n1 No Answer\n2 Callback\n3 Interested\n4 Closed\n5 Not Interested\n6 Do Not Call\n\nEnter number:');
+  const m={'1':'no_answer','2':'callback','3':'interested','4':'closed','5':'not_interested','6':'do_not_call'};
+  const o=m[c?.trim()];if(!o)return;
+  const n=prompt('Note (optional):')||'';
+  l.log.push({outcome:o,note:n,time:new Date().toLocaleString('en-AU',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})});
+  l.status=o;save();renderList();renderMain();
+}
+
+setInterval(()=>{renderList();if(activeId)renderMain();},60000);
+load();renderList();
+</script>
+</body>
+</html>
