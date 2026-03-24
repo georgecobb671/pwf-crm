@@ -337,7 +337,9 @@ function getFiltered(){
   const q=document.getElementById('search').value.toLowerCase();
   let list=leads.filter(l=>{
     const mf=filter==='all'||l.status===filter;
-    const mq=!q||`${l.fn} ${l.ln}`.toLowerCase().includes(q)||l.ph.includes(q)||l.addr.toLowerCase().includes(q);
+    const stateNorm={'western australia':'wa','victoria':'vic','queensland':'qld','south australia':'sa','new south wales':'nsw','northern territory':'nt','tasmania':'tas'};
+    const stateQ=stateNorm[l.state.toLowerCase().trim()]||l.state.toLowerCase().trim();
+    const mq=!q||`${l.fn} ${l.ln}`.toLowerCase().includes(q)||l.ph.includes(q)||l.addr.toLowerCase().includes(q)||stateQ.includes(q)||l.state.toLowerCase().includes(q)||l.post.includes(q);
     return mf&&mq;
   });
   list.sort((a,b)=>{
