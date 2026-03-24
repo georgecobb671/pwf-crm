@@ -187,6 +187,14 @@
           <button class="filter-tab f-not_interested" data-f="not_interested" onclick="setFilter('not_interested')">Not Int.</button>
           <button class="filter-tab f-do_not_call" data-f="do_not_call" onclick="setFilter('do_not_call')">DNC</button>
         </div>
+        <div style="margin-top:6px;width:100%;border-top:1px solid var(--border);padding-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="filter-tab active" data-tz="all" onclick="setTZ('all')">All TZ</button>
+          <button class="filter-tab" data-tz="Sydney" onclick="setTZ('Sydney')">NSW/VIC/ACT</button>
+          <button class="filter-tab" data-tz="Brisbane" onclick="setTZ('Brisbane')">QLD</button>
+          <button class="filter-tab" data-tz="Adelaide" onclick="setTZ('Adelaide')">SA</button>
+          <button class="filter-tab" data-tz="Perth" onclick="setTZ('Perth')">WA</button>
+          <button class="filter-tab" data-tz="Darwin" onclick="setTZ('Darwin')">NT</button>
+        </div>
       </div>
       <div class="lead-list" id="lead-list"></div>
     </div>
@@ -315,7 +323,7 @@ const SM={
   do_not_call:{label:'🚫 Do Not Call',pill:'p-do_not_call'},
 };
 
-let leads=[], activeId=null, filter='all', saveTimer=null;
+let leads=[], activeId=null, filter='all', tzFilter='all', saveTimer=null;
 
 function load(){
   const s=localStorage.getItem(KEY);
@@ -333,14 +341,17 @@ function setFilter(f){
   renderList();
 }
 
+function setTZ(tz){tzFilter=tz;document.querySelectorAll('[data-tz]').forEach(t=>t.classList.toggle('active',t.dataset.tz===tz));renderList();}
+
 function getFiltered(){
   const q=document.getElementById('search').value.toLowerCase();
   let list=leads.filter(l=>{
     const mf=filter==='all'||l.status===filter;
+    const mt=tzFilter==='all'||getTZ(l.state).includes(tzFilter);
     const stateNorm={'western australia':'wa','victoria':'vic','queensland':'qld','south australia':'sa','new south wales':'nsw','northern territory':'nt','tasmania':'tas'};
     const stateQ=stateNorm[l.state.toLowerCase().trim()]||l.state.toLowerCase().trim();
     const mq=!q||`${l.fn} ${l.ln}`.toLowerCase().includes(q)||l.ph.includes(q)||l.addr.toLowerCase().includes(q)||stateQ.includes(q)||l.state.toLowerCase().includes(q)||l.post.includes(q);
-    return mf&&mq;
+    return mf&&mq&&mt;
   });
   list.sort((a,b)=>{
     const d=ORDER.indexOf(a.status)-ORDER.indexOf(b.status);
